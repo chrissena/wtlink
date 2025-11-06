@@ -1,6 +1,6 @@
 {
   "name": "wtlink",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Interactive CLI tool for managing configuration file links between git worktrees. Share config files while keeping build artifacts separate.",
   "main": "dist/src/manage-manifest.js",
   "bin": {

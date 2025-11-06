@@ -1,3 +1,25 @@
+# [3.0.0](https://github.com/chrissena/wtlink/compare/v2.0.0...v3.0.0) (2025-11-06)
+
+
+### Bug Fixes
+
+* downgrade semantic-release to v24 for Node 20 compatibility ([e71e085](https://github.com/chrissena/wtlink/commit/e71e08551b78040fd9c7e84dc004d1678dd7f7d4))
+* update Node version requirements and workflow permissions ([cf58883](https://github.com/chrissena/wtlink/commit/cf5888352c368245022fb1b2d37d1d9cd74edb13))
+
+
+### Features
+
+* add automatic semantic versioning and releases ([464eb26](https://github.com/chrissena/wtlink/commit/464eb26d92fb90586154365037b1f548cd5ce00d))
+
+
+### BREAKING CHANGES
+
+* All future releases will be automated. Manual version bumps in package.json are no longer needed.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
