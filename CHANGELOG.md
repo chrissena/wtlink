@@ -1,3 +1,10 @@
+## [3.0.1](https://github.com/chrissena/wtlink/compare/v3.0.0...v3.0.1) (2025-11-06)
+
+
+### Bug Fixes
+
+* clarify v3.0.0 breaking change affects release process only ([9797fd5](https://github.com/chrissena/wtlink/commit/9797fd50c664b7fec66b023219e090c9a4a8e7f3))
+
 # [3.0.0](https://github.com/chrissena/wtlink/compare/v2.0.0...v3.0.0) (2025-11-06)
 
 
