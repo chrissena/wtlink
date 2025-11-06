@@ -1,0 +1,36 @@
+# Compiled output
+dist/
+
+# Dependencies
+node_modules/
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+*.tsbuildinfo
+
+# Temporary files
+*.tmp
+*.bak
+
+# wtlink manifests and backups (for testing)
+.wtlinkrc
+.wtlinkrc.bak
+.worktree-link-configs.txt
+.worktree-link-configs.txt.bak
