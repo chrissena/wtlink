@@ -6,7 +6,17 @@
 
 A powerful interactive tool for managing configuration file links between Git worktrees.
 
-## Breaking Changes in v2.0.0
+## Version Compatibility
+
+### v3.0.0 - Process Change (No User Impact)
+
+**Important**: v3.0.0 contains a BREAKING CHANGE to the **release process**, **not** to the user-facing API or CLI.
+
+**For end users**: ✅ No action needed - all commands, features, and functionality work exactly the same as v2.0.0.
+
+**What changed**: The project now uses automated semantic versioning and releases. This is a breaking change for **maintainers/contributors** who can no longer manually bump versions, but does not affect how you use wtlink.
+
+### v2.0.0 - Breaking Changes
 
 **If upgrading from v1.x**, be aware of these changes:
 
@@ -787,6 +797,53 @@ Add to your repo root `package.json`:
 ```
 
 Then run `npm install` to make `wtlink` available via `npx`.
+
+## Releases & Versioning
+
+This project uses [semantic-release](https://github.com/semantic-release/semantic-release) for automated versioning and publishing.
+
+### Automated Releases
+
+Every push to the `main` branch triggers an automated release workflow:
+
+1. ✅ **Tests and linting** must pass
+2. 🔍 **Commit analysis** - examines commit messages since last release
+3. 📈 **Version bump** - automatically determined from commits:
+   - `fix:` commits → **Patch** release (3.0.0 → 3.0.1)
+   - `feat:` commits → **Minor** release (3.0.0 → 3.1.0)
+   - `BREAKING CHANGE:` → **Major** release (3.0.0 → 4.0.0)
+4. 📝 **Changelog** - auto-generated and committed
+5. 📦 **npm publish** - published to npm registry
+6. 🏷️ **GitHub release** - created with release notes
+
+### Conventional Commits
+
+This project follows the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```bash
+# Patch release (bug fixes)
+git commit -m "fix: resolve path resolution issue on Windows"
+
+# Minor release (new features)
+git commit -m "feat: add support for symbolic links"
+
+# Major release (breaking changes)
+git commit -m "feat!: redesign CLI interface"
+# or
+git commit -m "feat: redesign CLI interface
+
+BREAKING CHANGE: Command syntax has changed. See migration guide."
+```
+
+**Commit types**:
+- `feat:` - New feature (minor version bump)
+- `fix:` - Bug fix (patch version bump)
+- `docs:` - Documentation changes (no release)
+- `chore:` - Maintenance tasks (no release)
+- `refactor:` - Code refactoring (no release)
+- `test:` - Test changes (no release)
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for complete details on the release process.
 
 ## Contributing
 

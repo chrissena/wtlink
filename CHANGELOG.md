@@ -14,7 +14,19 @@
 
 ### BREAKING CHANGES
 
-* All future releases will be automated. Manual version bumps in package.json are no longer needed.
+* **Release process only**: All future releases will be automated using semantic-release. Manual version bumps in package.json are no longer needed.
+
+**Important**: This breaking change affects the **project's release workflow**, not the user-facing CLI or API. All commands and features work exactly the same as v2.0.0.
+
+**For end users**: ✅ No migration needed - you can safely upgrade from v2.0.0 to v3.0.0 with no changes.
+
+**For maintainers/contributors**: The release process has changed:
+- Versions are now determined automatically from conventional commit messages
+- CHANGELOG.md is auto-generated
+- Publishing to npm happens automatically on push to main
+- Manual version bumps would be overwritten by the automated system
+
+See README.md "Releases & Versioning" section for details on the new workflow.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
