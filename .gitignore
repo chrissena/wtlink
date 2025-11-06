@@ -34,3 +34,5 @@ Thumbs.db
 .wtlinkrc.bak
 .worktree-link-configs.txt
 .worktree-link-configs.txt.bak
+
+.claude/

@@ -59,7 +59,7 @@ describe('wtlink CLI (integration)', () => {
         ...actual,
         spawnSync: jest.fn((command: string, args?: ReadonlyArray<string>, options?: SpawnSyncOptions) => {
           if (command !== 'git' || !args) {
-            return (actual.spawnSync as typeof spawnSync)(command, args as any, options);
+            return (actual.spawnSync as typeof spawnSync)(command, args as ReadonlyArray<string> | undefined, options);
           }
 
           const joined = args.join(' ');
@@ -116,12 +116,14 @@ describe('wtlink CLI (integration)', () => {
             } as unknown as SpawnSyncReturns<string>;
           }
 
-          return (actual.spawnSync as typeof spawnSync)(command, args as any, options);
+          return (actual.spawnSync as typeof spawnSync)(command, args as ReadonlyArray<string>, options);
         }),
       };
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     ({ run: linkRun } = require('../src/link-configs'));
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     ({ run: validateRun } = require('../src/validate-manifest'));
   });
 
@@ -131,6 +133,10 @@ describe('wtlink CLI (integration)', () => {
 
   it('links ignored configs using auto-detected worktrees and validates manifest', () => {
     const originalCwd = process.cwd();
+    // On Windows, symlink creation requires admin privileges or developer mode
+    // Use hard links instead on Windows to avoid permission errors
+    const linkType = process.platform === 'win32' ? 'hard' : 'symbolic';
+
     try {
       process.chdir(featureDir);
       const rootCheck = spawnSync('git', ['rev-parse', '--show-toplevel'], {
@@ -146,7 +152,7 @@ describe('wtlink CLI (integration)', () => {
       linkRun({
         manifestFile: '.wtlinkrc',
         dryRun: false,
-        type: 'symbolic',
+        type: linkType,
         yes: true,
       });
     } finally {
@@ -155,7 +161,10 @@ describe('wtlink CLI (integration)', () => {
 
     const destinationFile = path.join(featureDir, 'config/local-settings.json');
     expect(fs.existsSync(destinationFile)).toBe(true);
-    expect(fs.lstatSync(destinationFile).isSymbolicLink()).toBe(true);
+    if (linkType === 'symbolic') {
+      // eslint-disable-next-line jest/no-conditional-expect
+      expect(fs.lstatSync(destinationFile).isSymbolicLink()).toBe(true);
+    }
     expect(fs.readFileSync(destinationFile, 'utf-8')).toBe('{"source":true}\n');
 
     try {

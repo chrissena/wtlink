@@ -66,8 +66,9 @@ export async function showMainMenu(): Promise<void> {
           console.log(chalk.green('\nGoodbye!\n'));
           break;
       }
-    } catch (error: any) {
-      console.error(chalk.red('\nError:'), error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red('\nError:'), errorMessage);
       await pressAnyKey();
     }
   }

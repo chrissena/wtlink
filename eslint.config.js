@@ -5,6 +5,9 @@ const tsParser = require('@typescript-eslint/parser');
 const jest = require('eslint-plugin-jest');
 
 module.exports = [
+  {
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '*.config.js', 'eslint.config.js'],
+  },
   js.configs.recommended,
   {
     files: ['src/**/*.ts', 'tests/**/*.ts'],

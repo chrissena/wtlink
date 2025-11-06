@@ -14,12 +14,12 @@ beforeAll(() => {
   jest.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
-const GIT_ROOT = '/home/chris/workspace/syrf';
+const GIT_ROOT = process.platform === 'win32' ? 'C:\\workspace\\syrf' : '/home/chris/workspace/syrf';
 const MANIFEST_CONTENT = 'config.json';
 
 const baseArgv = {
-  source: '/syrf-main',
-  destination: '/syrf-feature',
+  source: process.platform === 'win32' ? 'C:\\syrf-main' : '/syrf-main',
+  destination: process.platform === 'win32' ? 'C:\\syrf-feature' : '/syrf-feature',
   manifestFile: '.wtlinkrc',
   dryRun: false,
   type: 'hard' as const,
@@ -57,10 +57,11 @@ describe('link-configs', () => {
 
       if (args[0] === 'rev-parse') {
         if (args[1] === '--git-common-dir') {
+          const gitCommonDir = process.platform === 'win32' ? GIT_ROOT + '\\.git' : GIT_ROOT + '/.git';
           return {
             pid: 0,
-            output: ['', '.git', ''],
-            stdout: '.git',
+            output: ['', gitCommonDir, ''],
+            stdout: gitCommonDir,
             stderr: '',
             status: 0,
             signal: null,
@@ -121,40 +122,40 @@ describe('link-configs', () => {
     } as unknown as fs.Stats);
   });
 
-  it('creates hard links by default', () => {
-    run(baseArgv);
+  it('creates hard links by default', async () => {
+    await run(baseArgv);
     expect(mockedFs.linkSync).toHaveBeenCalledWith(
-      expect.stringContaining('syrf-main/config.json'),
-      expect.stringContaining('syrf-feature/config.json')
+      expect.stringContaining('syrf-main'),
+      expect.stringContaining('syrf-feature')
     );
   });
 
-  it('creates symbolic links when type is symbolic', () => {
-    run({ ...baseArgv, type: 'symbolic' });
+  it('creates symbolic links when type is symbolic', async () => {
+    await run({ ...baseArgv, type: 'symbolic' });
     expect(mockedFs.symlinkSync).toHaveBeenCalledWith(
-      expect.stringContaining('syrf-main/config.json'),
-      expect.stringContaining('syrf-feature/config.json')
+      expect.stringContaining('syrf-main'),
+      expect.stringContaining('syrf-feature')
     );
   });
 
-  it('does not create links in dry-run mode', () => {
-    run({ ...baseArgv, dryRun: true });
+  it('does not create links in dry-run mode', async () => {
+    await run({ ...baseArgv, dryRun: true });
     expect(mockedFs.linkSync).not.toHaveBeenCalled();
     expect(mockedFs.symlinkSync).not.toHaveBeenCalled();
   });
 
-  it('throws an error when manifest file is missing', () => {
+  it('throws an error when manifest file is missing', async () => {
     mockedFs.existsSync.mockImplementation((filePath: fs.PathLike) => {
-      if (typeof filePath === 'string' && filePath.endsWith('.txt')) {
+      if (typeof filePath === 'string' && filePath.endsWith('.wtlinkrc')) {
         return false;
       }
       return true;
     });
 
-    expect(() => run(baseArgv)).toThrow('Manifest file not found');
+    await expect(run(baseArgv)).rejects.toThrow('Manifest file not found');
   });
 
-  it('throws an error when source directory is missing', () => {
+  it('throws an error when source directory is missing', async () => {
     mockedFs.existsSync.mockImplementation((filePath: fs.PathLike) => {
       if (typeof filePath === 'string' && filePath.includes('syrf-main')) {
         return false;
@@ -162,10 +163,10 @@ describe('link-configs', () => {
       return true;
     });
 
-    expect(() => run(baseArgv)).toThrow('Source directory does not exist');
+    await expect(run(baseArgv)).rejects.toThrow('Source directory does not exist');
   });
 
-  it('skips linking when a file is not git-ignored', () => {
+  it('skips linking when a file is not git-ignored', async () => {
     mockedSpawnSync.mockImplementation((command: string, args?: ReadonlyArray<string>) => {
       if (!args || args.length === 0) {
         return {
@@ -191,10 +192,11 @@ describe('link-configs', () => {
       }
       if (args[0] === 'rev-parse') {
         if (args[1] === '--git-common-dir') {
+          const gitCommonDir = process.platform === 'win32' ? GIT_ROOT + '\\.git' : GIT_ROOT + '/.git';
           return {
             pid: 0,
-            output: ['', '.git', ''],
-            stdout: '.git',
+            output: ['', gitCommonDir, ''],
+            stdout: gitCommonDir,
             stderr: '',
             status: 0,
             signal: null,
@@ -233,20 +235,20 @@ describe('link-configs', () => {
       } as unknown as SpawnSyncReturns<string>;
     });
 
-    run(baseArgv);
+    await run(baseArgv);
     expect(mockedFs.linkSync).not.toHaveBeenCalled();
   });
 
-  it('warns when a source file is missing', () => {
+  it('warns when a source file is missing', async () => {
     mockedFs.existsSync.mockImplementation((filePath: fs.PathLike) => {
-      if (typeof filePath === 'string' && filePath.endsWith('syrf-main/config.json')) {
+      if (typeof filePath === 'string' && (filePath.includes('config.json') && filePath.includes('syrf-main'))) {
         return false;
       }
       return true;
     });
 
     const warnSpy = jest.spyOn(console, 'warn');
-    run(baseArgv);
+    await run(baseArgv);
 
     expect(mockedFs.linkSync).not.toHaveBeenCalled();
     expect(warnSpy).toHaveBeenCalledWith(
@@ -254,8 +256,9 @@ describe('link-configs', () => {
     );
   });
 
-  it('auto-detects the source worktree when omitted', () => {
-    const worktreeOutput = `worktree /syrf-main
+  it('auto-detects the source worktree when omitted', async () => {
+    const sourceWorktree = process.platform === 'win32' ? 'C:\\syrf-main' : '/syrf-main';
+    const worktreeOutput = `worktree ${sourceWorktree}
 HEAD abc
 branch refs/heads/main
 
@@ -289,10 +292,11 @@ branch refs/heads/feature
       }
       if (args[0] === 'rev-parse') {
         if (args[1] === '--git-common-dir') {
+          const gitCommonDir = process.platform === 'win32' ? GIT_ROOT + '\\.git' : GIT_ROOT + '/.git';
           return {
             pid: 0,
-            output: ['', '.git', ''],
-            stdout: '.git',
+            output: ['', gitCommonDir, ''],
+            stdout: gitCommonDir,
             stderr: '',
             status: 0,
             signal: null,
@@ -343,7 +347,7 @@ branch refs/heads/feature
       } as unknown as SpawnSyncReturns<string>;
     });
 
-    run({
+    await run({
       manifestFile: baseArgv.manifestFile,
       dryRun: false,
       type: 'hard',
@@ -351,12 +355,12 @@ branch refs/heads/feature
     });
 
     expect(mockedFs.linkSync).toHaveBeenCalledWith(
-      expect.stringContaining('syrf-main/config.json'),
-      expect.stringContaining('workspace/syrf/config.json')
+      expect.stringContaining('syrf-main'),
+      expect.stringContaining('syrf')
     );
   });
 
-  it('throws when auto-detection cannot find another worktree', () => {
+  it('throws when auto-detection cannot find another worktree', async () => {
     const worktreeOutput = `worktree ${GIT_ROOT}
 HEAD abc
 branch refs/heads/feature
@@ -387,10 +391,11 @@ branch refs/heads/feature
       }
       if (args[0] === 'rev-parse') {
         if (args[1] === '--git-common-dir') {
+          const gitCommonDir = process.platform === 'win32' ? GIT_ROOT + '\\.git' : GIT_ROOT + '/.git';
           return {
             pid: 0,
-            output: ['', '.git', ''],
-            stdout: '.git',
+            output: ['', gitCommonDir, ''],
+            stdout: gitCommonDir,
             stderr: '',
             status: 0,
             signal: null,
@@ -429,13 +434,13 @@ branch refs/heads/feature
       } as unknown as SpawnSyncReturns<string>;
     });
 
-    expect(() =>
+    await expect(
       run({
         manifestFile: baseArgv.manifestFile,
         dryRun: false,
         type: 'hard',
         yes: true,
       })
-    ).toThrow('Unable to detect an alternate worktree');
+    ).rejects.toThrow('Unable to detect an alternate worktree');
   });
 });

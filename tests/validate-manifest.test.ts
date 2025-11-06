@@ -9,7 +9,7 @@ jest.mock('fs');
 const mockedSpawnSync = spawnSync as jest.MockedFunction<typeof spawnSync>;
 const mockedFs = fs as jest.Mocked<typeof fs>;
 
-const GIT_ROOT = '/home/chris/workspace/syrf';
+const GIT_ROOT = process.platform === 'win32' ? 'C:\\workspace\\syrf' : '/home/chris/workspace/syrf';
 const MANIFEST_FILE = '.wtlinkrc';
 const MANIFEST_PATH = path.join(GIT_ROOT, MANIFEST_FILE);
 
@@ -52,11 +52,12 @@ describe('validate-manifest', () => {
 
       if (args[0] === 'rev-parse') {
         if (args[1] === '--git-common-dir') {
-          // Return .git for main worktree
+          // Return .git for main worktree (as absolute path to match real git behavior)
+          const gitCommonDir = path.join(GIT_ROOT, '.git');
           return {
             pid: 0,
-            output: ['', '.git', ''],
-            stdout: '.git',
+            output: ['', gitCommonDir, ''],
+            stdout: gitCommonDir,
             stderr: '',
             status: 0,
             signal: null,
@@ -113,7 +114,10 @@ describe('validate-manifest', () => {
 
   it('throws when the manifest file is missing', () => {
     mockedFs.existsSync.mockImplementation((filePath: fs.PathLike) => {
-      if (typeof filePath === 'string' && filePath === MANIFEST_PATH) return false;
+      const filePathStr = typeof filePath === 'string' ? filePath : filePath.toString();
+      const normalizedFilePath = path.normalize(filePathStr);
+      const normalizedManifestPath = path.normalize(MANIFEST_PATH);
+      if (normalizedFilePath === normalizedManifestPath) return false;
       return true;
     });
 

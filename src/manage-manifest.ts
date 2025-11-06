@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import * as readline from 'readline';
-import { signal, computed, Signal, ReadonlySignal } from '@preact/signals-core';
+import { signal, computed } from '@preact/signals-core';
 
 // ============================================================================
 // TYPES - Clear type definitions for the domain
@@ -161,13 +161,19 @@ function isItemVisible(
  * Build file tree from flat list of file paths
  */
 function buildFileTree(filePaths: string[]): FileNode {
-  const root: any = {
+  interface MutableFileNode {
+    path: string;
+    isDirectory: boolean;
+    children: MutableFileNode[];
+  }
+
+  const root: MutableFileNode = {
     path: '',
     isDirectory: true,
     children: [],
   };
 
-  const nodeMap = new Map<string, any>();
+  const nodeMap = new Map<string, MutableFileNode>();
   nodeMap.set('', root);
 
   for (const filePath of filePaths) {
@@ -181,7 +187,7 @@ function buildFileTree(filePaths: string[]): FileNode {
       const isLastPart = i === parts.length - 1;
 
       if (!nodeMap.has(currentPath)) {
-        const node: any = {
+        const node: MutableFileNode = {
           path: currentPath,
           isDirectory: !isLastPart,
           children: isLastPart ? [] : [],
@@ -197,7 +203,7 @@ function buildFileTree(filePaths: string[]): FileNode {
   }
 
   // Make immutable
-  function makeImmutable(node: any): FileNode {
+  function makeImmutable(node: MutableFileNode): FileNode {
     return {
       path: node.path,
       isDirectory: node.isDirectory,
@@ -336,7 +342,11 @@ function getDisplayItems(state: AppState): DisplayItem[] {
 // STATE UPDATES - Immutable state transitions
 // ============================================================================
 
-function updateDecision(
+// These functions provide a functional API for state updates but are not currently used
+// They're kept for potential future use or for testing purposes
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+function _updateDecision(
   state: AppState,
   item: DisplayItem,
   decision: FileDecision
@@ -357,7 +367,7 @@ function updateDecision(
   return { ...state, decisions: newDecisions };
 }
 
-function toggleFilter(state: AppState, filter: ItemState): AppState {
+function _toggleFilter(state: AppState, filter: ItemState): AppState {
   const newFilters = new Set(state.activeFilters);
   if (newFilters.has(filter)) {
     newFilters.delete(filter);
@@ -373,7 +383,7 @@ function toggleFilter(state: AppState, filter: ItemState): AppState {
   };
 }
 
-function toggleViewMode(state: AppState): AppState {
+function _toggleViewMode(state: AppState): AppState {
   return {
     ...state,
     viewMode: state.viewMode === 'flat' ? 'hierarchical' : 'flat',
@@ -383,17 +393,17 @@ function toggleViewMode(state: AppState): AppState {
   };
 }
 
-function toggleHelp(state: AppState): AppState {
+function _toggleHelp(state: AppState): AppState {
   return { ...state, showHelp: !state.showHelp };
 }
 
-function moveCursor(state: AppState, delta: number): AppState {
+function _moveCursor(state: AppState, delta: number): AppState {
   const displayItems = getDisplayItems(state);
   const newIndex = Math.max(0, Math.min(displayItems.length - 1, state.cursorIndex + delta));
   return { ...state, cursorIndex: newIndex };
 }
 
-function navigateInto(state: AppState): AppState {
+function _navigateInto(state: AppState): AppState {
   if (state.viewMode === 'flat') return state; // No navigation in flat view
 
   const displayItems = getDisplayItems(state);
@@ -426,7 +436,7 @@ function navigateInto(state: AppState): AppState {
   return state;
 }
 
-function navigateBack(state: AppState): AppState {
+function _navigateBack(state: AppState): AppState {
   if (state.viewMode === 'flat' || state.navigationStack.length === 0) {
     return state;
   }
@@ -439,7 +449,7 @@ function navigateBack(state: AppState): AppState {
   };
 }
 
-function updateScroll(state: AppState): AppState {
+function _updateScroll(state: AppState): AppState {
   const displayItems = getDisplayItems(state);
   const terminalHeight = process.stdout.rows || 24;
   const headerLines = 8;
@@ -460,6 +470,8 @@ function updateScroll(state: AppState): AppState {
 
   return { ...state, scrollOffset };
 }
+
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 // ============================================================================
 // COMMON DIRECTORIES
@@ -914,7 +926,7 @@ async function interactiveManage(
       process.stdin.removeListener('keypress', onKeypress);
     };
 
-    const onKeypress = (str: string, key: any) => {
+    const onKeypress = (str: string, key: { name?: string; ctrl?: boolean }) => {
       const displayItems = displayItems$.value; // Cached!
 
       if (key.name === 'up') {
@@ -1118,7 +1130,7 @@ function getMainWorktreeRoot(): string {
       : commonDirPath;
 
     return path.dirname(gitDir);
-  } catch (error) {
+  } catch {
     // Fallback to current git root if command fails
     return getGitRoot();
   }

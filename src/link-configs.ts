@@ -103,7 +103,7 @@ function getMainWorktreeRoot(): string {
       : commonDirPath;
 
     return path.dirname(gitDir);
-  } catch (error) {
+  } catch {
     // Fallback to current git root if command fails
     return getGitRoot();
   }
@@ -310,7 +310,8 @@ function updateManifest(manifestPath: string, filesToRemove: string[]): void {
 /**
  * Get all file descendants of a folder path
  */
-function getDescendants(folderPath: string, allFiles: string[]): string[] {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _getDescendants(folderPath: string, allFiles: string[]): string[] {
   return allFiles.filter(file => file.startsWith(folderPath + '/'));
 }
 
@@ -320,8 +321,8 @@ function getDescendants(folderPath: string, allFiles: string[]): string[] {
  */
 async function interactiveConflictResolver(
   conflicts: FileStatus[],
-  sourceDir: string,
-  destDir: string
+  _sourceDir: string,
+  _destDir: string
 ): Promise<Map<string, ConflictResolution>> {
   const resolutions = new Map<string, ConflictResolution>();
   const conflictFiles = conflicts.map(c => c.file);
@@ -335,7 +336,7 @@ async function interactiveConflictResolver(
     }
   }
 
-  const allItems = [...Array.from(folders), ...conflictFiles].sort();
+  // const allItems = [...Array.from(folders), ...conflictFiles].sort();
 
   console.clear();
   console.log(chalk.cyan.bold('\n╔═══════════════════════════════════════════════════════════════════════════════════════╗'));
@@ -623,8 +624,9 @@ export async function run(argv: LinkArgv): Promise<void> {
         console.log(chalk.green(`  - Hard-linked: ${file}`));
       }
       linkedCount++;
-    } catch (error: any) {
-      console.error(chalk.red(`  - ERROR linking ${file}: ${error.message}`));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`  - ERROR linking ${file}: ${errorMessage}`));
       errorCount++;
     }
   }

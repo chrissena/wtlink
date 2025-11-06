@@ -106,13 +106,19 @@ function isItemVisible(
 }
 
 function buildFileTree(filePaths: string[]): FileNode {
-  const root: any = {
+  interface MutableFileNode {
+    path: string;
+    isDirectory: boolean;
+    children: MutableFileNode[];
+  }
+
+  const root: MutableFileNode = {
     path: '',
     isDirectory: true,
     children: [],
   };
 
-  const nodeMap = new Map<string, any>();
+  const nodeMap = new Map<string, MutableFileNode>();
   nodeMap.set('', root);
 
   for (const filePath of filePaths) {
@@ -126,7 +132,7 @@ function buildFileTree(filePaths: string[]): FileNode {
       const isLastPart = i === parts.length - 1;
 
       if (!nodeMap.has(currentPath)) {
-        const node: any = {
+        const node: MutableFileNode = {
           path: currentPath,
           isDirectory: !isLastPart,
           children: [],
@@ -140,7 +146,7 @@ function buildFileTree(filePaths: string[]): FileNode {
     }
   }
 
-  function makeImmutable(node: any): FileNode {
+  function makeImmutable(node: MutableFileNode): FileNode {
     return {
       path: node.path,
       isDirectory: node.isDirectory,

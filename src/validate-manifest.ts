@@ -75,7 +75,7 @@ function getMainWorktreeRoot(): string {
       : commonDirPath;
 
     return path.dirname(gitDir);
-  } catch (error) {
+  } catch {
     // Fallback to current git root if command fails
     return getGitRoot();
   }
