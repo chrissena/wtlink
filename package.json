@@ -49,8 +49,8 @@
   },
   "homepage": "https://github.com/chrissena/wtlink#readme",
   "engines": {
-    "node": ">=14.0.0",
-    "npm": ">=6.0.0"
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
   },
   "preferGlobal": true,
   "dependencies": {
