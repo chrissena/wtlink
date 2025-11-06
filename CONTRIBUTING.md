@@ -198,15 +198,42 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
 
 ### Release Process
 
-(For maintainers only)
+**Releases are fully automated!** When commits are merged to `main`, semantic-release will:
 
-1. Update version in package.json (semver)
-2. Update CHANGELOG.md
-3. Commit: `git commit -m "chore: release v2.1.0"`
-4. Tag: `git tag v2.1.0`
-5. Push: `git push && git push --tags`
-6. Publish: `npm publish`
-7. Create GitHub release with changelog
+1. Analyze commit messages to determine version bump
+2. Generate/update CHANGELOG.md
+3. Update package.json and package-lock.json
+4. Create a git tag
+5. Publish to npm
+6. Create a GitHub release with notes
+
+#### Version Bumps Based on Commits
+
+- **Patch** (2.0.0 → 2.0.1): Only `fix:` commits
+- **Minor** (2.0.0 → 2.1.0): At least one `feat:` commit
+- **Major** (2.0.0 → 3.0.0): Any commit with `BREAKING CHANGE:` or `!` after type
+
+#### Breaking Changes
+
+To trigger a major version bump:
+
+```bash
+# Method 1: Add ! after type
+git commit -m "feat!: redesign CLI interface"
+
+# Method 2: Add BREAKING CHANGE in footer
+git commit -m "feat: redesign CLI interface
+
+BREAKING CHANGE: Command syntax has changed. Use --help for new syntax."
+```
+
+#### What Gets Released
+
+- Commits without `feat:` or `fix:` → No release
+- Only docs/chore/style commits → No release
+- At least one `fix:` → Patch release
+- At least one `feat:` → Minor release
+- Any breaking change → Major release
 
 ## Questions?
 
